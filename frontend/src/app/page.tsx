@@ -16,6 +16,7 @@ import {
 import Header from "@/components/Header";
 import Sidebar from "@/components/Sidebar";
 import HostedZoneModal from "@/components/HostedZoneModal";
+import Toast from "@/components/Toast";
 import {
   deleteHostedZone,
   getHostedZones,
@@ -34,6 +35,10 @@ export default function Home() {
     useState<HostedZone | null>(null);
 
   const [menuId, setMenuId] = useState<number | null>(null);
+  const [toast, setToast] = useState<{
+     type: "success" | "error";
+     message: string;
+  } | null>(null);
   const router = useRouter();
 
   useEffect(() => {
@@ -75,12 +80,18 @@ export default function Home() {
       await deleteHostedZone(id);
       await loadZones();
       setMenuId(null);
+      setToast({
+        type: "success",
+        message: "Hosted zone deleted successfully.",
+      });
     } catch (error) {
-      alert(
+      setToast({
+        type:"error",
+        message:
         error instanceof Error
           ? error.message
           : "Failed to delete hosted zone"
-      );
+      });
     }
   }
 
@@ -97,6 +108,13 @@ export default function Home() {
 
   return (
     <div className="min-h-screen bg-white text-gray-900">
+      {toast && (
+        <Toast
+          type={toast.type}
+          message={toast.message}
+          onClose={() => setToast(null)}
+        />
+      )}
       <Header />
 
       <div className="flex min-h-[calc(100vh-64px)]">
@@ -322,7 +340,14 @@ export default function Home() {
         <HostedZoneModal
           zone={editingZone}
           onClose={() => setModalOpen(false)}
-          onSaved={loadZones}
+          onSaved={async (message) => {
+            await loadZones();
+
+            setToast({
+              type: "success",
+              message,
+            });
+          }}
         />
       )}
     </div>

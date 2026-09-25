@@ -3,108 +3,139 @@
 import { useState } from "react";
 import {
   Bell,
-  ChevronDown,
   HelpCircle,
+  ChevronDown,
   LogOut,
-  Menu,
 } from "lucide-react";
-import { useRouter } from "next/navigation";
-import { logout } from "@/lib/auth";
+import { getCurrentUser, logout, CurrentUser } from "@/lib/auth";
 
-export default function Header() {
-  const router = useRouter();
+interface HeaderProps {
+  onSignOut?: () => void;
+}
 
-  const [menuOpen, setMenuOpen] = useState(false);
+export default function Header({ onSignOut }: HeaderProps) {
+  const [user] = useState<CurrentUser | null>(() => {
+    if (typeof window === "undefined") {
+      return null;
+    }
 
-  function handleLogout() {
+    return getCurrentUser();
+  });
+
+  const [accountOpen, setAccountOpen] = useState(false);
+
+  function handleSignOut() {
     logout();
-    setMenuOpen(false);
-    router.push("/login");
+    onSignOut?.();
+    window.location.href = "/login";
   }
 
   return (
-    <header className="h-16 bg-[#232f3e] text-white flex items-center px-5">
-      {/* Left side */}
-      <div className="flex items-center gap-3">
-        <Menu
-          size={20}
-          className="text-gray-300"
-        />
+    <header className="fixed left-0 right-0 top-0 z-50 flex h-14 items-center bg-[#111827] text-white">
+      {/* AWS / Management Console */}
+      <div className="flex h-full w-[220px] items-center border-r border-gray-700 px-5">
+        <div className="flex items-center">
+          <span className="text-2xl font-bold tracking-tight">
+            aws
+          </span>
 
-        <div className="text-2xl font-bold tracking-tight">
-          aws
+          <span className="ml-2 text-xs text-gray-300">
+            Management Console
+          </span>
         </div>
-
-        <div className="h-6 w-px bg-gray-500 mx-2" />
-
-        <span className="text-sm text-gray-300">
-          Management Console
-        </span>
       </div>
 
       {/* Right side */}
-      <div className="ml-auto flex items-center gap-5 text-sm">
+      <div className="ml-auto flex h-full items-center">
+        {/* Notifications */}
         <button
-          className="text-gray-300 hover:text-white"
-          title="Notifications"
+          type="button"
+          className="flex h-full items-center px-4 text-gray-300 transition hover:bg-gray-800 hover:text-white"
+          aria-label="Notifications"
         >
-          <Bell size={17} />
+          <Bell size={18} />
         </button>
 
+        {/* Help */}
         <button
-          className="text-gray-300 hover:text-white"
-          title="Help"
+          type="button"
+          className="flex h-full items-center px-4 text-gray-300 transition hover:bg-gray-800 hover:text-white"
+          aria-label="Help"
         >
-          <HelpCircle size={17} />
+          <HelpCircle size={18} />
         </button>
 
-        {/* Account menu */}
-        <div className="relative">
+        {/* Account */}
+        <div className="relative h-full">
           <button
-            onClick={() => setMenuOpen(!menuOpen)}
-            className="flex items-center gap-2 px-3 py-2 rounded hover:bg-[#314158] transition"
+            type="button"
+            onClick={() => setAccountOpen((open) => !open)}
+            className="flex h-full items-center gap-3 px-5 transition hover:bg-gray-800"
+            aria-expanded={accountOpen}
+            aria-haspopup="menu"
           >
-            <span>Vishnu</span>
+            {/* Account avatar */}
+            <div className="flex h-8 w-8 items-center justify-center rounded-full bg-gray-600 text-xs font-semibold uppercase">
+              {user?.name?.charAt(0) || "A"}
+            </div>
+
+            {/* Account information */}
+            <div className="text-left">
+              <div className="text-sm font-medium leading-4">
+                {user?.name || "Account"}
+              </div>
+
+              <div className="mt-1 max-w-[180px] truncate text-[11px] text-gray-400">
+                {user?.email || ""}
+              </div>
+            </div>
 
             <ChevronDown
-              size={15}
+              size={16}
               className={`transition-transform ${
-                menuOpen ? "rotate-180" : ""
+                accountOpen ? "rotate-180" : ""
               }`}
             />
           </button>
 
-          {menuOpen && (
-            <>
-              {/* Invisible backdrop */}
-              <button
-                className="fixed inset-0 z-40 cursor-default"
-                onClick={() => setMenuOpen(false)}
-                aria-label="Close menu"
-              />
+          {/* Account dropdown */}
+          {accountOpen && (
+            <div
+              className="absolute right-0 top-14 w-72 border border-gray-300 bg-white text-gray-900 shadow-xl"
+              role="menu"
+            >
+              {/* User information */}
+              <div className="border-b border-gray-200 px-4 py-4">
+                <div className="flex items-center gap-3">
+                  <div className="flex h-10 w-10 items-center justify-center rounded-full bg-gray-200 text-sm font-semibold uppercase text-gray-700">
+                    {user?.name?.charAt(0) || "A"}
+                  </div>
 
-              {/* Dropdown */}
-              <div className="absolute right-0 top-full mt-2 z-50 w-52 bg-white text-gray-800 border border-gray-200 rounded-md shadow-xl overflow-hidden">
-                <div className="px-4 py-3 border-b bg-gray-50">
-                  <p className="text-sm font-semibold">
-                    Vishnu Choudhary
-                  </p>
+                  <div className="min-w-0">
+                    <p className="truncate text-sm font-semibold">
+                      {user?.name || "Account"}
+                    </p>
 
-                  <p className="text-xs text-gray-500 mt-1">
-                    Route 53 user
-                  </p>
+                    <p className="mt-1 truncate text-xs text-gray-500">
+                      {user?.email || ""}
+                    </p>
+                  </div>
                 </div>
+              </div>
 
+              {/* Account options */}
+              <div className="py-1">
                 <button
-                  onClick={handleLogout}
-                  className="w-full flex items-center gap-3 px-4 py-3 text-sm text-left hover:bg-gray-100"
+                  type="button"
+                  onClick={handleSignOut}
+                  className="flex w-full items-center gap-3 px-4 py-3 text-left text-sm text-gray-700 transition hover:bg-gray-100"
+                  role="menuitem"
                 >
                   <LogOut size={16} />
-
                   <span>Sign out</span>
                 </button>
               </div>
-            </>
+            </div>
           )}
         </div>
       </div>

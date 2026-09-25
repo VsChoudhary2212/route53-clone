@@ -11,7 +11,7 @@ import {
 interface Props {
   zone?: HostedZone | null;
   onClose: () => void;
-  onSaved: () => void;
+  onSaved: (message: string) => void;
 }
 
 export default function HostedZoneModal({
@@ -57,7 +57,11 @@ export default function HostedZoneModal({
         });
       }
 
-      onSaved();
+      onSaved(
+         zone
+           ? "Hosted zone updated successfully."
+           : "Hosted zone created successfully."
+      );
       onClose();
     } catch (err) {
       setError(

@@ -1,36 +1,40 @@
-export interface User {
+export interface CurrentUser {
   name: string;
   email: string;
 }
 
-const USER: User = {
-  name: "Vishnu Choudhary",
-  email: "vishnu@example.com",
-};
-
 const SESSION_KEY = "route53_session";
 
-export function login(
-  email: string,
-  password: string
-): User | null {
-  if (!email || !password) {
-    return null;
-  }
+function formatName(email: string): string {
+  const username = email.split("@")[0];
 
-  localStorage.setItem(
-    SESSION_KEY,
-    JSON.stringify(USER)
-  );
-
-  return USER;
+  return username
+    .replace(/[._-]+/g, " ")
+    .replace(/\b\w/g, (char) => char.toUpperCase());
 }
 
-export function logout() {
+export function login(email: string, password: string): boolean {
+  if (!email.trim() || !password.trim()) {
+    return false;
+  }
+
+  const normalizedEmail = email.trim().toLowerCase();
+
+  const user: CurrentUser = {
+    name: formatName(normalizedEmail),
+    email: normalizedEmail,
+  };
+
+  localStorage.setItem(SESSION_KEY, JSON.stringify(user));
+
+  return true;
+}
+
+export function logout(): void {
   localStorage.removeItem(SESSION_KEY);
 }
 
-export function getCurrentUser(): User | null {
+export function getCurrentUser(): CurrentUser | null {
   if (typeof window === "undefined") {
     return null;
   }
@@ -42,8 +46,9 @@ export function getCurrentUser(): User | null {
   }
 
   try {
-    return JSON.parse(session);
+    return JSON.parse(session) as CurrentUser;
   } catch {
+    localStorage.removeItem(SESSION_KEY);
     return null;
   }
 }
