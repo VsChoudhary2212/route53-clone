@@ -117,7 +117,7 @@ export default function Home() {
       )}
       <Header />
 
-      <div className="flex min-h-[calc(100vh-64px)]">
+      <div className="flex min-h-[calc(100vh-64px)] pt-14">
         <Sidebar
           active={active}
           onSelect={setActive}

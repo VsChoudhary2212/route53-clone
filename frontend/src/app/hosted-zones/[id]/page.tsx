@@ -118,7 +118,7 @@ export default function HostedZonePage() {
     <div className="min-h-screen bg-white text-gray-900">
       <Header />
 
-      <div className="flex min-h-[calc(100vh-64px)]">
+      <div className="flex min-h-[calc(100vh-64px)] pt-14">
         <Sidebar
           active="Hosted zones"
           onSelect={(item) => {
