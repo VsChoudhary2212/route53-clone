@@ -46,7 +46,7 @@ export default function LoginPage() {
             </div>
 
             <div>
-              <h1 className="text-xl font-semibold">
+              <h1 className="text-xl font-semibold text-gray-900">
                 Sign in
               </h1>
 
